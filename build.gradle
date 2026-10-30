@@ -1,0 +1,73 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '2.3.0'
+    id 'io.qameta.allure' version '3.0.1'
+}
+
+group = 'org.example.kotlin'
+version = '1.0-SNAPSHOT'
+
+kotlin {
+    jvmToolchain(21)
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    agent {
+        canBeResolved = true
+        canBeConsumed = true
+    }
+}
+
+test {
+    useJUnitPlatform {
+        if (System.getProperty("TAGS")) {
+            includeTags System.getProperty("TAGS")
+        }
+    }
+
+    dependsOn("cleanTest")
+
+    //Pass system properties into JVM with tests
+    systemProperties(System.getProperties())
+}
+
+dependencies {
+    // JUnit
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '6.0.3'
+    testImplementation group: 'org.junit.platform', name: 'junit-platform-engine', version: '6.0.3'
+    testRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-launcher', version: '6.0.3'
+
+    // Frontend
+    testImplementation group: 'com.codeborne', name: 'selenide', version: '7.14.0'
+
+    // Backend
+    testImplementation group: 'com.squareup.retrofit2', name: 'retrofit', version: '3.0.0'
+    testImplementation group: 'com.squareup.retrofit2', name: 'converter-gson', version: '3.0.0'
+    testImplementation group: 'com.google.code.gson', name: 'gson', version: '2.13.2'
+
+    //Database
+    def exposedVersion = "1.1.1"
+    testImplementation group: 'org.postgresql', name: 'postgresql', version: '42.7.10'
+    testImplementation group: 'org.jetbrains.exposed', name: 'exposed-core', version: exposedVersion
+    testImplementation group: 'org.jetbrains.exposed', name: 'exposed-jdbc', version: exposedVersion
+
+    // Assert
+    testImplementation group: 'io.kotest', name: 'kotest-assertions-core', version: '6.1.1'
+
+    // Allure
+    agent "org.aspectj:aspectjweaver:1.9.22"
+    testImplementation group: 'org.aspectj', name: 'aspectjweaver', version: '1.9.22'
+    testImplementation group: 'io.qameta.allure', name: 'allure-junit5', version: '2.33.0'
+    testImplementation group: 'io.qameta.allure', name: 'allure-okhttp3', version: '2.33.0'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Test).configureEach {
+    systemProperty "file.encoding", "UTF-8"
+}
